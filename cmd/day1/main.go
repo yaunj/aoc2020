@@ -1,9 +1,7 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
-	"io"
 	"os"
 
 	"github.com/yaunj/aoc2020"
@@ -37,32 +35,6 @@ func Part2(input []int) int {
 	}
 
 	return 0
-}
-
-func intsFromFile(path string) ([]int, error) {
-	var num int
-	ints := []int{}
-
-	file, err := os.Open(path)
-	if err != nil {
-		return nil, err
-	}
-
-	reader := bufio.NewReader(file)
-
-	for {
-		_, err = fmt.Fscanf(reader, "%d\n", &num)
-		if err != nil {
-			if err == io.EOF {
-				break
-			}
-			return nil, err
-		}
-
-		ints = append(ints, num)
-	}
-
-	return ints, nil
 }
 
 func main() {
