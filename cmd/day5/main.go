@@ -22,62 +22,48 @@ func NewBoardingPass(ID string) (*BoardingPass, error) {
 		return nil, fmt.Errorf("length of ID must == 10")
 	}
 
-	row, column, seatID := 0, 0, 0
-	min, max := 0, 127
-
-	for _, part := range ID[:7] {
-		pivot := ((max - min) / 2) + min
-		// fmt.Printf("min: %3d  pivot: %3d  max: %3d  part: %c\n", min, pivot, max, part)
-
-		switch part {
-		case 'F': // lower
-			max = pivot
-			break
-		case 'B': // upper
-			min = pivot + 1
-			break
-		default:
-			return nil, fmt.Errorf("invalid format: %s", ID)
-		}
-
-		row = max
+	row, err := bisect(0, 127, ID[:7], 'F', 'B')
+	if err != nil {
+		return nil, err
 	}
 
-	min, max = 0, 7
-	for _, part := range ID[7:] {
-		pivot := ((max - min) / 2) + min
-		// fmt.Printf("min: %3d  pivot: %3d  max: %3d  part: %c\n", min, pivot, max, part)
-
-		switch part {
-		case 'L': // lower
-			max = pivot
-			break
-		case 'R': // upper
-			min = pivot + 1
-			break
-		default:
-			return nil, fmt.Errorf("invalid format: %s", ID)
-		}
-
-		column = max
+	column, err := bisect(0, 7, ID[7:], 'L', 'R')
+	if err != nil {
+		return nil, err
 	}
 
-	seatID = row*8 + column
+	seatID := row*8 + column
 
 	return &BoardingPass{ID: ID, Row: row, Column: column, SeatID: seatID}, nil
 }
 
-// Part1 solves part 1 of the challenge
-func Part1(passes []string) int {
-	max := 0
+func bisect(min, max int, sequence string, low, high rune) (int, error) {
+	res := 0
 
-	for _, pass := range passes {
-		bp, err := NewBoardingPass(pass)
-		if err != nil {
-			fmt.Fprintln(os.Stderr, "Error parsing boarding pass:", err)
-			continue
+	for _, part := range sequence {
+		pivot := ((max - min) / 2) + min
+
+		switch part {
+		case low:
+			max = pivot
+		case high:
+			min = pivot + 1
+			break
+		default:
+			return -1, fmt.Errorf("invalid format (%c not in [%c, %c])", part, low, high)
 		}
 
+		res = max
+	}
+
+	return res, nil
+}
+
+// Part1 solves part 1 of the challenge
+func Part1(passes []*BoardingPass) int {
+	max := 0
+
+	for _, bp := range passes {
 		if bp.SeatID > max {
 			max = bp.SeatID
 		}
@@ -87,11 +73,10 @@ func Part1(passes []string) int {
 }
 
 // Part2 solves part 2 of the challenge
-func Part2(passes []string) int {
+func Part2(passes []*BoardingPass) int {
 	ids := []int{}
 
-	for _, pass := range passes {
-		bp, _ := NewBoardingPass(pass)
+	for _, bp := range passes {
 		ids = append(ids, bp.SeatID)
 	}
 
@@ -119,6 +104,17 @@ func main() {
 		os.Exit(1)
 	}
 
-	fmt.Println("Part 1:", Part1(passes))
-	fmt.Println("Part 2:", Part2(passes))
+	boardingPasses := []*BoardingPass{}
+	for _, pass := range passes {
+		bp, err := NewBoardingPass(pass)
+		if err != nil {
+			fmt.Fprintln(os.Stderr, "Error parsing boarding pass:", err)
+			continue
+		}
+
+		boardingPasses = append(boardingPasses, bp)
+	}
+
+	fmt.Println("Part 1:", Part1(boardingPasses))
+	fmt.Println("Part 2:", Part2(boardingPasses))
 }
