@@ -1,9 +1,13 @@
 package aoc2020
 
-import "testing"
+import (
+	"fmt"
+	"testing"
+)
 
 const (
-	day1input = "testdata/input1"
+	day1input = "testdata/day1"
+	day4input = "testdata/day4"
 )
 
 func TestIntsFromFile(t *testing.T) {
@@ -52,5 +56,29 @@ func TestIntsFromFileVs(t *testing.T) {
 		if a[i] != b[i] {
 			t.Fatalf("IntsFromFile and IntsFromFileViaFields differs at offset %d: %d vs %d\n", i, a[i], b[i])
 		}
+	}
+}
+
+func TestChunksFromFile(t *testing.T) {
+	cases := []struct {
+		path     string
+		expected int
+	}{
+		{day1input, 1},
+		{day4input, 288},
+	}
+
+	for i, tc := range cases {
+		t.Run(fmt.Sprintf("ChunksForDay%d", i), func(t *testing.T) {
+			chunks, err := ChunksFromFile(tc.path)
+
+			if err != nil {
+				t.Error("Got unexpected error:", err)
+			}
+
+			if len(chunks) != tc.expected {
+				t.Error("Expected", tc.expected, "chunk(s), got", len(chunks))
+			}
+		})
 	}
 }

@@ -79,3 +79,39 @@ func LinesFromFile(path string) ([]string, error) {
 
 	return lines, nil
 }
+
+// ChunksFromFile returns a slice of string slices, representing blocks of text
+// in a file, separated by an empty line.
+func ChunksFromFile(path string) ([][]string, error) {
+	file, err := os.Open(path)
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+	chunks := [][]string{}
+	chunk := []string{}
+
+	for scanner.Scan() {
+		line := scanner.Text()
+
+		if len(line) == 0 {
+			if len(chunk) > 0 {
+				chunks = append(chunks, chunk)
+				chunk = []string{}
+			}
+
+			continue
+		}
+
+		chunk = append(chunk, line)
+	}
+
+	// Check if there is a remaining chunk
+	if len(chunk) > 0 {
+		chunks = append(chunks, chunk)
+	}
+
+	return chunks, nil
+}
