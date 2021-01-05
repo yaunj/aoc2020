@@ -19,6 +19,7 @@ func IntsFromFile(path string) ([]int, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer file.Close()
 
 	reader := bufio.NewReader(file)
 
@@ -46,6 +47,7 @@ func IntsFromFileViaFields(path string) ([]int, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer file.Close()
 
 	data, err := ioutil.ReadAll(file)
 	if err != nil {
@@ -66,6 +68,7 @@ func LinesFromFile(path string) ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer file.Close()
 
 	scanner := bufio.NewScanner(file)
 	lines := []string{}
